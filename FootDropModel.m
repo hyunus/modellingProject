@@ -77,6 +77,7 @@ classdef FootDropModel < handle
             subplot(2,1,1), plot(time, x(:,1))
             set(gca, 'FontSize', 18)
             ylabel('Ankle Angle (rad)')
+            hold off
             subplot(2,1,2), hold on
             plot(time, fS*dS/70, 'r');
             plot(time, (fExo*dTA+fTA*dTA)/70, 'g')
@@ -100,23 +101,12 @@ classdef FootDropModel < handle
             title('ankle torque')
             xlabel('time (s)')
             ylabel('torque')
-            hold off
-%             
-%             figure 
-%             hold on 
-%             plot(time, x(:,1)-pi/2)
-%             title('Ankle Angle w.r.t. Anatomical Position')
-%             xlabel('time (s)')
-%             ylabel('angle (rads)')
-%             hold off
-            
-                          
-         
+            hold off       
         end        
     end
 end
 
-function dx_dt = dynamics(t, x, S, TA, exo, control, a_TA_in, a_S_in) 
+function dx_dt = dynamics(t, x, S, TA, exo, control) 
     % Right-hand side of the dynamic equation of the model. 
     % 
     % t: time of current step (s)
@@ -140,18 +130,21 @@ function dx_dt = dynamics(t, x, S, TA, exo, control, a_TA_in, a_S_in)
         
     %control law that simulates foot drop (i.e. TA not working properly) 
     if control == 1
-        modulo = mod(t,2);
-        if modulo > 0.6
+        %set gait cycle duration
+        remainder = mod(t,2);
+        %augment a_S curve with zeros
+        if remainder > 0.6
             a_S = 0;
         else
             curve = HillTypeMuscle.SActivationRegression;
-            a_S = curve.eval(modulo/2);
+            a_S = curve.eval(remainder/2);
         end
-        if modulo > 0.13 && modulo < 0.62
+        %augment a_TA curve with zeros
+        if remainder > 0.13 && remainder < 0.62
             a_TA = 0;
         else
             curve = HillTypeMuscle.TAActivationRegression;
-            a_TA = curve.eval(modulo/2);
+            a_TA = curve.eval(remainder/2);
         end
     end   
         

@@ -1,4 +1,5 @@
-FootDropModel.simulate(1, 315, 12);
+%simulate(control, k, time)
+FootDropModel.simulate(1, 10, 24);
 
 % generate curve fitted activation plots
 % x = 0:0.01:1;

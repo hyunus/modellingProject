@@ -90,6 +90,8 @@ classdef HillTypeMuscle < handle
             fT = HillTypeMuscle.forceLengthSE(lT);
             fPE = HillTypeMuscle.forceLengthPE(lM);
             fL = HillTypeMuscle.forceLengthCE(lM);
+            %include exoskeleton force if there is one attached to this
+            %muscle
             fEXO = exo.force(lM);
             func = @(vM) (1*(((a*fL*HillTypeMuscle.forceVelocityCE(vM))+ (fPE) + (beta*vM)+ fEXO)*cos(0)) - (1*fT));
             vMNorm = fzero(func, 0);
@@ -152,6 +154,7 @@ classdef HillTypeMuscle < handle
 end
 
 function result = getSActivationRegression()
+    %data pulled from literature
     a_S = [1.5669515669515697, 5.315170940170958
     3.133903133903136, 6.1660561660561655
     4.131054131054132, 7.9250610500610605
@@ -222,6 +225,7 @@ function result = getSActivationRegression()
     99.14529914529916, 2.701465201465197
     ];
 
+    %percent to decimal
     x = a_S(:,1)/100;
     y = a_S(:,2)/100;
 
@@ -299,7 +303,8 @@ function result = getTAActivationRegression()
     ];
 
     x = a_TA(:,1)/100;
-    y = a_TA(:,2)/100/25;
+    %25 percent activation
+    y = a_TA(:,2)/100/4;
 
     centres = 0:0.01:1;
     width = .05;
