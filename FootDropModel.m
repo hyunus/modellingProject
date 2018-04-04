@@ -69,24 +69,49 @@ classdef FootDropModel < handle
             [time, x] = ode45(odefun, [0 T], [theta0 0 1 1], OPTIONS);
             
             fS = getForce(S, FootDropModel.soleusLength(x(:,1)), x(:,3));
-%             fTA = getForce(TA, FootDropModel.tibialisLength(x(:,1)), x(:,4));
+            fTA = getForce(TA, FootDropModel.tibialisLength(x(:,1)), x(:,4));
             fExo = exo.force(x(:,4));
 
             figure
             hold on
             subplot(2,1,1), plot(time, x(:,1))
             set(gca, 'FontSize', 18)
-            ylabel('Body Angle (rad)')
+            ylabel('Ankle Angle (rad)')
             subplot(2,1,2), hold on
-            plot(time, fS*dS, 'r');
-            plot(time, -fExo*dTA, 'g');
-            plot(time, getGravityMoment(x(:,1)), 'k')
-            legend('soleus', 'tibialis+exo', 'gravity')
+            plot(time, fS*dS/70, 'r');
+            plot(time, (fExo*dTA+fTA*dTA)/70, 'g')
+            legend('soleus', 'tibialis')
             set(gca, 'FontSize', 18)
             xlabel('Time (s)')
-            ylabel('Torques (Nm)')
+            ylabel('Torques (Nm/kg)')
             hold off
             
+            figure
+            hold on 
+            plot(time, getGravityMoment(x(:,1)), 'k')
+            legend('gravity')
+            xlabel('time(s)')
+            ylabel('gravity moment (Nm)')
+            hold off
+            
+            figure 
+            hold on 
+            plot(time, x(:,2)*90/70, 'k')
+            title('ankle torque')
+            xlabel('time (s)')
+            ylabel('torque')
+            hold off
+%             
+%             figure 
+%             hold on 
+%             plot(time, x(:,1)-pi/2)
+%             title('Ankle Angle w.r.t. Anatomical Position')
+%             xlabel('time (s)')
+%             ylabel('angle (rads)')
+%             hold off
+            
+                          
+         
         end        
     end
 end
@@ -115,17 +140,21 @@ function dx_dt = dynamics(t, x, S, TA, exo, control, a_TA_in, a_S_in)
         
     %control law that simulates foot drop (i.e. TA not working properly) 
     if control == 1
-        if x(1) > 3*pi/4
-            a_S = 0.00011;
-            a_TA = 0.00000001;
+        modulo = mod(t,2);
+        if modulo > 0.6
+            a_S = 0;
         else
-            a_S = 0.009;
-            a_TA = 0.00000001;
+            curve = HillTypeMuscle.SActivationRegression;
+            a_S = curve.eval(modulo/2);
+        end
+        if modulo > 13 && modulo < 62
+            a_TA = 0;
+        else
+            curve = HillTypeMuscle.TAActivationRegression;
+            a_TA = curve.eval(modulo/2);
         end
     end   
-    
-    t
-    
+        
     %calculate derivatives based on dynamic equations given
     %dx_dt is a 1D, 4 row matrix
     fexo = exo.force(norm_TA);

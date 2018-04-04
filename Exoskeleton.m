@@ -9,7 +9,7 @@ classdef Exoskeleton < handle
         end
         
         function result = force(e, lM)
-            result = zeros(size(lM));
+            result = transpose(zeros(size(lM)));
             for i = 1:length(lM)
                 if(lM(i) < 1)
                     result(i) = 0;    
