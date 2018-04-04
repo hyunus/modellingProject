@@ -147,7 +147,7 @@ function dx_dt = dynamics(t, x, S, TA, exo, control, a_TA_in, a_S_in)
             curve = HillTypeMuscle.SActivationRegression;
             a_S = curve.eval(modulo/2);
         end
-        if modulo > 13 && modulo < 62
+        if modulo > 0.13 && modulo < 0.62
             a_TA = 0;
         else
             curve = HillTypeMuscle.TAActivationRegression;
